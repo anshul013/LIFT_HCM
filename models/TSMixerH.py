@@ -37,4 +37,39 @@ class Model(_TSMixerH):
                     ).to(self.device)
                     
                     # Add to ModuleList
-                    self.cluster_models.append(mixer_block) 
+                    self.cluster_models.append(mixer_block)
+                    
+    def requires_grad_(self, requires_grad: bool = True):
+        # If we're using LIFT and freezing, only freeze the backbone
+        if hasattr(self.args, 'lift') and self.args.lift and not requires_grad:
+            # First freeze everything
+            for param in self.parameters():
+                param.requires_grad = False
+                
+            # Then unfreeze specific LIFT components if they exist
+            if hasattr(self, 'lead_refiner'):
+                # Unfreeze temperature parameter for leader selection
+                if hasattr(self.lead_refiner, 'temperature'):
+                    self.lead_refiner.temperature.requires_grad = True
+                    
+                # Unfreeze mix_layer for combining leader and follower information
+                if hasattr(self.lead_refiner, 'mix_layer'):
+                    for param in self.lead_refiner.mix_layer.parameters():
+                        param.requires_grad = True
+                        
+                # For factory, only unfreeze mix_head which combines features
+                if hasattr(self.lead_refiner, 'factory'):
+                    if self.lead_refiner.factory.num_state == 1:
+                        if hasattr(self.lead_refiner.factory, 'mix_head'):
+                            for param in self.lead_refiner.factory.mix_head.parameters():
+                                param.requires_grad = True
+                    else:
+                        if hasattr(self.lead_refiner.factory, 'mix_head_w'):
+                            self.lead_refiner.factory.mix_head_w.requires_grad = True
+                        if hasattr(self.lead_refiner.factory, 'mix_head_b'):
+                            self.lead_refiner.factory.mix_head_b.requires_grad = True
+        else:
+            # Otherwise use normal freezing behavior
+            for param in self.parameters():
+                param.requires_grad = requires_grad
+        return self 
