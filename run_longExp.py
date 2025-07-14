@@ -183,13 +183,13 @@ if args.model.startswith('GPT4TS'):
     args.data += '_CI'
 
 FLAG_LIFT = args.model == 'LightMTS' or args.lift
-if args.model in ['TSMixerH', 'TMixerH']:
-    Exp = Exp_HCM
-elif FLAG_LIFT:
+if FLAG_LIFT:
     Exp = Exp_Lead
     args.wrap_data_class.append(data_loader.Dataset_Lead_Pretrain if args.freeze else data_loader.Dataset_Lead)
     if args.dataset.startswith('ETT'):
         args.efficient = False
+elif args.model in ['TSMixerH', 'TMixerH']:
+    Exp = Exp_HCM
 else:
     Exp = Exp_Main
 
