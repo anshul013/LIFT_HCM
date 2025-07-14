@@ -52,22 +52,35 @@ class Model(_TSMixerH):
                 if hasattr(self.lead_refiner, 'temperature'):
                     self.lead_refiner.temperature.requires_grad = True
                     
-                # Unfreeze mix_layer for combining leader and follower information
+                # Unfreeze mix_layer (ComplexLinear) parameters
                 if hasattr(self.lead_refiner, 'mix_layer'):
                     for param in self.lead_refiner.mix_layer.parameters():
                         param.requires_grad = True
                         
-                # For factory, only unfreeze mix_head which combines features
+                # Unfreeze FilterFactory parameters
                 if hasattr(self.lead_refiner, 'factory'):
-                    if self.lead_refiner.factory.num_state == 1:
-                        if hasattr(self.lead_refiner.factory, 'mix_head'):
-                            for param in self.lead_refiner.factory.mix_head.parameters():
+                    factory = self.lead_refiner.factory
+                    
+                    # Unfreeze classifier, basic_state, and bias if they exist
+                    if factory.num_state > 1 and factory.need_classifier:
+                        if hasattr(factory, 'classifier'):
+                            for param in factory.classifier.parameters():
+                                param.requires_grad = True
+                        if hasattr(factory, 'basic_state'):
+                            factory.basic_state.requires_grad = True
+                        if hasattr(factory, 'bias'):
+                            factory.bias.requires_grad = True
+                    
+                    # Unfreeze mix_head parameters
+                    if factory.num_state == 1:
+                        if hasattr(factory, 'mix_head'):
+                            for param in factory.mix_head.parameters():
                                 param.requires_grad = True
                     else:
-                        if hasattr(self.lead_refiner.factory, 'mix_head_w'):
-                            self.lead_refiner.factory.mix_head_w.requires_grad = True
-                        if hasattr(self.lead_refiner.factory, 'mix_head_b'):
-                            self.lead_refiner.factory.mix_head_b.requires_grad = True
+                        if hasattr(factory, 'mix_head_w'):
+                            factory.mix_head_w.requires_grad = True
+                        if hasattr(factory, 'mix_head_b'):
+                            factory.mix_head_b.requires_grad = True
         else:
             # Otherwise use normal freezing behavior
             for param in self.parameters():
