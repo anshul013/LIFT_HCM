@@ -255,7 +255,7 @@ if __name__ == '__main__':
             if args.model == 'PatchTST' and args.dataset in ['ECL', 'Traffic', 'Illness', 'Weather']:
                 fix_seed = 2021 + ii
             else:
-                fix_seed = 2023 + ii
+                fix_seed = 3000 + ii
             setup_seed(fix_seed)
             print('Seed:', fix_seed)
 
