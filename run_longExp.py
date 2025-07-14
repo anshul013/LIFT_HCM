@@ -130,6 +130,7 @@ parser.add_argument('--patch_size', type=int, default=16)
 # Add HCM specific arguments
 parser.add_argument('--num_clusters', type=int, default=4, help='number of clusters for HCM models')
 parser.add_argument('--clustering_method', type=str, default='kmeans', help='clustering method for HCM models')
+parser.add_argument('--n_layers', type=int, default=4, help='num of encoder layers (N)')
 
 # optimization
 parser.add_argument('--num_workers', type=int, default=0, help='data loader num workers')
