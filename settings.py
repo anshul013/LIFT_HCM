@@ -121,6 +121,12 @@ def get_hyperparams(data, model, args):
 
 
 def pretrain_lr(model, dataset, H, lr):
+    # For TMixerH/TSMixerH, use a smaller learning rate for LIFT training
+    if model in ['TMixerH']:
+        if dataset in ['ETTh1']:
+            return 0.00436  # Original learning rate for backbone
+        return lr  # Use provided learning rate for LIFT
+
     if model == 'MTGNN':
         if dataset in 'Weather|ETTh1|ETTm1'.split('|'):
             return 0.0001
